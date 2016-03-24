@@ -1,6 +1,6 @@
 {
   "name": "@leisurelink/mongodb-connector",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "LeisureLink's conventional mongodb connector utility.",
   "main": "index.js",
   "repository": {
