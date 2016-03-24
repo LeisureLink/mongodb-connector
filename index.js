@@ -1,71 +1,57 @@
 'use strict';
 
-let assert = require('assert-plus');
-let Promise = require('bluebird');
+var assert = require('assert-plus');
+var Promise = require('bluebird');
 
-const DEFA_SOCKET_KEEPALIVE = 5;
-const DEFA_SOCKET_TIMEOUT_MS = 30000;
+var DEFA_SOCKET_KEEPALIVE = 5;
+var DEFA_SOCKET_TIMEOUT_MS = 30000;
 
-let $mongodb = Symbol('mongodb');
-let $connect = Symbol('connect');
+function connect(mongoUri, customizeOptions) {
+  var dbconnect = this; // eslint-disable-line no-invalid-this
+  var dbopts, n;
+  assert.string(mongoUri, 'mongoUri');
+  assert.optionalFunc(customizeOptions, 'customizeOptions');
 
-class Connector {
+  dbopts = {
+    server: {
+      socketOptions: { keepAlive: DEFA_SOCKET_KEEPALIVE, connectTimeoutMS: DEFA_SOCKET_TIMEOUT_MS }
+    },
+    replset: {
+      socketOptions: { keepAlive: DEFA_SOCKET_KEEPALIVE, connectTimeoutMS: DEFA_SOCKET_TIMEOUT_MS }
+    }
+  };
 
-  constructor() {}
-
-  use(mongodb) {
-    assert.ok(!this.mongodb, 'mongodb already specified');
-    this[$mongodb] = mongodb;
-    this[$connect] = Promise.promisify(mongodb.Db.connect);
-    return this;
+  // caller supplied customization...
+  if (customizeOptions) {
+    dbopts = customizeOptions(dbopts);
   }
 
-  connect(mongoUri, customizeOptions) {
-    assert.ok(this.mongodb, 'must specify mongodb module before connecting');
-    assert.string(mongoUri, 'mongoUri');
-    assert.optionalFunc(customizeOptions, 'customizeOptions');
-
-    let dbopts = {
-      server: {
-        socketOptions: { keepAlive: DEFA_SOCKET_KEEPALIVE, connectTimeoutMS: DEFA_SOCKET_TIMEOUT_MS }
-      },
-      replset: {
-        socketOptions: { keepAlive: DEFA_SOCKET_KEEPALIVE, connectTimeoutMS: DEFA_SOCKET_TIMEOUT_MS }
-      }
-    };
-
-    // caller supplied customization...
-    if (customizeOptions) {
-      dbopts = customizeOptions(dbopts);
-    }
-
-    // operator supplied customization...
-    if (process.env.MONGODB_OPTIONS_SOCKET_KEEPALIVE) {
-      let n = parseInt(process.env.MONGODB_OPTIONS_SOCKET_KEEPALIVE, 10);
-      dbopts.server.socketOptions.keepAlive = n;
-      dbopts.replset.socketOptions.keepAlive = n;
-    }
-    if (process.env.MONGODB_OPTIONS_SOCKET_CONNECT_TIMEOUT_MS) {
-      let n = parseInt(process.env.MONGODB_OPTIONS_SOCKET_CONNECT_TIMEOUT_MS, 10);
-      dbopts.server.socketOptions.connectTimeoutMS = n;
-      dbopts.replset.socketOptions.connectTimeoutMS = n;
-    }
-    if (process.env.MONGODB_OPTIONS_SSLVALIDATE === '0') {
-      dbopts.server.sslValidate = false;
-      dbopts.replset.sslValidate = false;
-    }
-
-    return this[$connect](mongoUri, dbopts);
+  // operator supplied customization...
+  if (process.env.MONGODB_OPTIONS_SOCKET_KEEPALIVE) {
+    n = parseInt(process.env.MONGODB_OPTIONS_SOCKET_KEEPALIVE, 10);
+    dbopts.server.socketOptions.keepAlive = n;
+    dbopts.replset.socketOptions.keepAlive = n;
+  }
+  if (process.env.MONGODB_OPTIONS_SOCKET_CONNECT_TIMEOUT_MS) {
+    n = parseInt(process.env.MONGODB_OPTIONS_SOCKET_CONNECT_TIMEOUT_MS, 10);
+    dbopts.server.socketOptions.connectTimeoutMS = n;
+    dbopts.replset.socketOptions.connectTimeoutMS = n;
+  }
+  if (process.env.MONGODB_OPTIONS_SSLVALIDATE === '0') {
+    dbopts.server.sslValidate = false;
+    dbopts.replset.sslValidate = false;
   }
 
-  get mongodb() { return this[$mongodb]; }
+  return dbconnect(mongoUri, dbopts);
 }
 
 function use(mongodb) {
-  return new Connector().use(mongodb);
+  var dbconnect = Promise.promisify(mongodb.Db.connect);
+  return {
+    connect: connect.bind(dbconnect)
+  };
 }
 
 module.exports = {
-  use,
-  Connector
+  use: use
 };
