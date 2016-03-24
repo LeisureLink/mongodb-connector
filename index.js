@@ -1,7 +1,7 @@
 'use strict';
 
 let assert = require('assert-plus');
-let promisify = require('es6-promisify');
+let Promise = require('bluebird');
 
 const DEFA_SOCKET_KEEPALIVE = 5;
 const DEFA_SOCKET_TIMEOUT_MS = 30000;
@@ -16,7 +16,7 @@ class Connector {
   use(mongodb) {
     assert.ok(!this.mongodb, 'mongodb already specified');
     this[$mongodb] = mongodb;
-    this[$connect] = promisify(mongodb.Db.connect);
+    this[$connect] = Promise.promisify(mongodb.Db.connect);
     return this;
   }
 
