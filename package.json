@@ -1,0 +1,20 @@
+{
+  "name": "@leisurelink/mongodb-connector",
+  "version": "0.1.0",
+  "description": "LeisureLink's conventional mongodb connector utility.",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeisureLink/mongodb-connector.git"
+  },
+  "author": "pclark@leisurelink.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LeisureLink/mongodb-connector/issues"
+  },
+  "homepage": "https://github.com/LeisureLink/mongodb-connector#readme",
+  "dependencies": {
+    "assert-plus": "^1.0.0",
+    "es6-promisify": "^3.0.0"
+  }
+}
