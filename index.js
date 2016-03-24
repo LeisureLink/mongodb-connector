@@ -14,7 +14,8 @@ function connect(mongoUri, customizeOptions) {
 
   dbopts = {
     server: {
-      socketOptions: { keepAlive: DEFA_SOCKET_KEEPALIVE, connectTimeoutMS: DEFA_SOCKET_TIMEOUT_MS }
+      socketOptions: { keepAlive: DEFA_SOCKET_KEEPALIVE, connectTimeoutMS: DEFA_SOCKET_TIMEOUT_MS },
+      auto_reconnect: true // eslint-disable-line camelcase
     },
     replset: {
       socketOptions: { keepAlive: DEFA_SOCKET_KEEPALIVE, connectTimeoutMS: DEFA_SOCKET_TIMEOUT_MS }
